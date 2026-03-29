@@ -21,7 +21,7 @@ logger = logging.getLogger(__name__)
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": ["https://mindguardai.vercel.app", "http://localhost:5173"]}}, supports_credentials=True)  # Enable CORS for React frontend
 
-# # Load trained model & scaler
+
 MODEL_PATH = ("./mental_random_forest.pkl")
 SCALER_PATH = ("./scaler.pkl")
 try:
@@ -30,19 +30,19 @@ try:
 
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
-    logger.info("✅ Model and scaler loaded successfully")
+    logger.info(" Model and scaler loaded successfully")
 except Exception as e:
-    logger.error(f"❌ Error loading model or scaler: {e}")
+    logger.error(f" Error loading model or scaler: {e}")
     raise
 
-# Email Credentials (Use an App Password for Gmail)
-EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
-EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  # Use an App Password
 
-# Mental Health Descriptions & Recommendations
+EMAIL_ADDRESS = os.getenv("EMAIL_ADDRESS")
+EMAIL_PASSWORD = os.getenv("EMAIL_PASSWORD")  
+
+
 mental_health_descriptions = {
     0: {
-        "category": "Very Healthy 🟢",
+        "category": "Very Healthy ",
         "description": "Individuals in this category exhibit excellent mental well-being. "
                        "They maintain a balanced lifestyle, manage stress effectively, and show no significant signs of emotional distress. "
                        "They have good sleep patterns, stable moods, and positive social interactions.",
@@ -53,7 +53,7 @@ mental_health_descriptions = {
         ]
     },
     1: {
-        "category": "Mild Issues 🟡",
+        "category": "Mild Issues ",
         "description": "People in this category may experience occasional stress, mood swings, or mild anxiety, "
                        "but these do not significantly impact daily life. They might have slightly irregular sleep patterns, "
                        "reduced energy levels, or minor social withdrawal. However, with self-care and mindfulness, they can maintain a good mental state.",
@@ -64,7 +64,7 @@ mental_health_descriptions = {
         ]
     },
     2: {
-        "category": "Moderate Concerns 🟠",
+        "category": "Moderate Concerns ",
         "description": "This group experiences noticeable mental health challenges, such as persistent stress, anxiety, or mood instability. "
                        "Symptoms may include sleep disturbances, fatigue, difficulty concentrating, and increased social withdrawal. "
                        "Intervention through lifestyle changes, counseling, or mild therapy is recommended.",
@@ -75,7 +75,7 @@ mental_health_descriptions = {
         ]
     },
     3: {
-        "category": "High Risk 🔴",
+        "category": "High Risk ",
         "description": "Individuals in this category show strong signs of mental distress, such as chronic anxiety, depression, or emotional instability. "
                        "They may experience severe sleep disturbances, lack of motivation, high stress, or even signs of burnout. "
                        "Professional help, therapy, or medical support is highly recommended to prevent further deterioration.",
@@ -87,7 +87,7 @@ mental_health_descriptions = {
     }
 }
 
-# Function to Send Email via Gmail SMTP
+
 def send_email(to_email, subject, body):
     msg = MIMEMultipart()
     msg['From'] = EMAIL_ADDRESS
@@ -101,11 +101,11 @@ def send_email(to_email, subject, body):
         server.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         server.sendmail(EMAIL_ADDRESS, to_email, msg.as_string())
         server.quit()
-        logger.info(f"✅ Email sent successfully to {to_email}")
+        logger.info(f" Email sent successfully to {to_email}")
     except smtplib.SMTPAuthenticationError:
-        logger.error("❌ Email Authentication Error: Check Gmail credentials or enable App Passwords.")
+        logger.error(" Email Authentication Error: Check Gmail credentials or enable App Passwords.")
     except Exception as e:
-        logger.error(f"❌ Email Error: {e}")
+        logger.error(f" Email Error: {e}")
 
 @app.route('/health', methods=['GET'])
 def health():
@@ -119,7 +119,7 @@ def predict():
     Expected input format: {"features": [f1, f2, ..., fn], "email": "user@example.com"}
     """
     try:
-        # Get JSON data from request
+       
         data = request.json
         if not data or "features" not in data:
             return jsonify({"error": "Missing 'features' in request"}), 400
@@ -127,14 +127,14 @@ def predict():
         features = data["features"]
         email = data.get("email")
 
-        # Validate features is a list
+       
         if not isinstance(features, list):
             return jsonify({"error": "Features must be a list"}), 400
 
-        # Convert input to NumPy array
+       
         features = np.array(features).reshape(1, -1)
 
-        # Validate feature count
+      
         expected_features = model.n_features_in_
         if features.shape[1] != expected_features:
             return jsonify({"error": f"Expected {expected_features} features, got {features.shape[1]}"}), 400
@@ -143,26 +143,26 @@ def predict():
         try:
             features_scaled = scaler.transform(features)
         except Exception as e:
-            logger.error(f"❌ Error during feature scaling: {e}")
+            logger.error(f" Error during feature scaling: {e}")
             return jsonify({"error": "Error scaling features. Check feature values."}), 400
 
-        # Predict mental health condition
+  
         prediction = model.predict(features_scaled)[0]
         mental_health_info = mental_health_descriptions.get(int(prediction), {})
 
-        # Prepare message
+      
         message = f"Your Mental Health Prediction:\n\nCategory: {mental_health_info['category']}\n\n" \
                   f"Description: {mental_health_info['description']}\n\n" \
                   f"Recommendations:\n- " + "\n- ".join(mental_health_info["recommendations"])
 
-        # Send Email (if provided)
+     
         if email:
             send_email(email, "Mental Health Prediction", message)
 
-        # Log successful prediction
-        logger.info(f"✅ Successful prediction: {prediction}")
+    
+        logger.info(f" Successful prediction: {prediction}")
 
-        # Return prediction result
+   
         return jsonify({
             "mental_health_condition": int(prediction),
             "category": mental_health_info["category"],
@@ -172,10 +172,10 @@ def predict():
         })
 
     except ValueError as ve:
-        logger.error(f"❌ ValueError in prediction: {ve}")
+        logger.error(f" ValueError in prediction: {ve}")
         return jsonify({"error": "Invalid feature values provided"}), 400
     except Exception as e:
-        logger.error(f"❌ Unexpected error in prediction: {e}")
+        logger.error(f" Unexpected error in prediction: {e}")
         return jsonify({"error": "An unexpected error occurred"}), 500
 
 if __name__ == '__main__':
