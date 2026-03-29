@@ -14,7 +14,7 @@ This project is a full-stack health-tech application designed to predict mental 
 ## Tech Stack
 | Category | Technology |
 | :--- | :--- |
-| **Mobile** | Flutter (Dart) |
+| **Mobile** | Flutter (Dart) (GetX) |
 | **Web** | React.js, Tailwind CSS |
 | **Backend** | Node.js, Express.js |
 | **Database** | MongoDB Atlas |
