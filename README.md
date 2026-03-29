@@ -18,7 +18,7 @@ This project is a full-stack health-tech application designed to predict mental 
 | **Web** | React.js, Tailwind CSS |
 | **Backend** | Node.js, Express.js |
 | **Database** | MongoDB Atlas |
-| **Machine Learning** | XGBoost, CatBoost, LightGBM |
+| **Machine Learning** | XGBoost, CatBoost, LightGBM, RandomForest |
 | **DevOps** | Docker, Git |
 
 ## Architecture
