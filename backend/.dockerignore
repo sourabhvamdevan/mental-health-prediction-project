@@ -1,0 +1,6 @@
+
+__pycache__/
+*.ipynb
+.git/
+.gitignore
+mental_health_data_structured.csv
