@@ -70,7 +70,7 @@ The prediction engine utilizes a **Weighted Voting Ensemble**:
 - **XGBoost:** High-speed gradient boosting for structured data.
 - **CatBoost:** Superior handling of categorical features without manual encoding.
 - **LightGBM:** Memory-efficient boosting for fast mobile-side responses.
-**RandomForest:** Reduces variance by averaging multiple deep decision trees. It provides a "stable baseline" for the ensemble.
+- **RandomForest:** Reduces variance by averaging multiple deep decision trees. It provides a "stable baseline" for the ensemble.
 
 
 
