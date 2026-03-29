@@ -4,67 +4,45 @@ import 'package:http/http.dart' as http;
 class ApiService {
   static const String baseUrl = "http://10.0.2.2:8000/api";
 
-  static Future<Map<String, dynamic>> getPrediction(
-    Map<String, dynamic> userData,
-  ) async {
+  static Future<Map<String, dynamic>?> getUserByUid(String uid) async {
     try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/auth/predict"),
+      final response = await http.get(
+        Uri.parse('$baseUrl/user/$uid'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode(userData),
       );
 
       if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      } else {
-        throw Exception("Server Error: ${response.statusCode}");
+        return json.decode(response.body);
       }
+      return null;
     } catch (e) {
-      throw Exception("Connection failed: $e");
+      print("Error fetching user: $e");
+      return null;
     }
   }
 
-  static Future<bool> signupUser(
-    String name,
-    String email,
-    String password,
-    String phone,
-  ) async {
+  static Future<bool> signupUser({
+    required String uid,
+    required String name,
+    required String email,
+    required String phone,
+  }) async {
     try {
       final response = await http.post(
-        Uri.parse("$baseUrl/auth/signup"),
+        Uri.parse('$baseUrl/auth/signup'),
         headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          "userName": name,
+        body: json.encode({
+          "uid": uid,
+          "name": name,
           "email": email,
-          "password": password,
           "phone": phone,
         }),
       );
 
-      return response.statusCode == 201;
+      return response.statusCode == 201 || response.statusCode == 200;
     } catch (e) {
+      print("Signup Error: $e");
       return false;
-    }
-  }
-
-  static Future<Map<String, dynamic>?> loginUser(
-    String email,
-    String password,
-  ) async {
-    try {
-      final response = await http.post(
-        Uri.parse("$baseUrl/auth/login"),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({"email": email, "password": password}),
-      );
-
-      if (response.statusCode == 200) {
-        return jsonDecode(response.body);
-      }
-      return null;
-    } catch (e) {
-      return null;
     }
   }
 }

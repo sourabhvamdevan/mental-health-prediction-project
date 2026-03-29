@@ -1,50 +1,69 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:get/get.dart';
 import '../services/api_service.dart';
 import '../services/local_db_service.dart';
 import '../models/user_model.dart';
 
 class AuthController extends GetxController {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
   var isLoading = false.obs;
   var isLoggedIn = false.obs;
   var currentUser = Rxn<UserModel>();
+
+  final Rxn<User> _firebaseUser = Rxn<User>();
 
   final LocalDbService _localDb = LocalDbService();
 
   @override
   void onInit() {
     super.onInit();
-    _checkLocalSession();
+
+    _firebaseUser.bindStream(_auth.authStateChanges());
+
+    ever(_firebaseUser, _handleAuthChanged);
+  }
+
+  void _handleAuthChanged(User? user) async {
+    if (user == null) {
+      isLoggedIn.value = false;
+      Get.offAllNamed('/welcome');
+    } else {
+      isLoggedIn.value = true;
+
+      _checkLocalSession();
+      Get.offAllNamed('/dashboard');
+    }
   }
 
   void _checkLocalSession() async {
     final cachedUser = await _localDb.getCachedUser();
     if (cachedUser != null) {
       currentUser.value = UserModel.fromJson(cachedUser);
-      isLoggedIn.value = true;
     }
   }
 
   Future<void> login(String email, String password) async {
     isLoading.value = true;
     try {
-      final response = await ApiService.loginUser(email, password);
+      UserCredential cred = await _auth.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
 
-      if (response != null && response['success'] == true) {
+      final response = await ApiService.getUserByUid(cred.user!.uid);
+
+      if (response != null) {
         UserModel user = UserModel.fromJson(response);
-
         currentUser.value = user;
-        isLoggedIn.value = true;
-
         await _localDb.cacheUser(user.userId!, user.userName!, user.email!);
-
-        Get.offAllNamed('/dashboard');
-      } else {
-        Get.snackbar(
-          "Login Failed",
-          response?['message'] ?? "Invalid credentials",
-          snackPosition: SnackPosition.BOTTOM,
-        );
       }
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar(
+        "Login Error",
+        e.message ?? "Authentication failed",
+        snackPosition: SnackPosition.BOTTOM,
+      );
     } finally {
       isLoading.value = false;
     }
@@ -58,30 +77,31 @@ class AuthController extends GetxController {
   ) async {
     isLoading.value = true;
     try {
-      bool success = await ApiService.signupUser(name, email, password, phone);
+      UserCredential cred = await _auth.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      bool success = await ApiService.signupUser(
+        uid: cred.user!.uid,
+        name: name,
+        email: email,
+        phone: phone,
+      );
+
       if (success) {
-        Get.snackbar(
-          "Success",
-          "Account created! Please login.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
-        Get.toNamed('/auth');
-      } else {
-        Get.snackbar(
-          "Error",
-          "Registration failed.",
-          snackPosition: SnackPosition.BOTTOM,
-        );
+        Get.snackbar("Success", "Account created successfully!");
       }
+    } on FirebaseAuthException catch (e) {
+      Get.snackbar("Error", e.message ?? "Registration failed");
     } finally {
       isLoading.value = false;
     }
   }
 
   void logout() async {
+    await _auth.signOut();
     await _localDb.clearAllData();
     currentUser.value = null;
-    isLoggedIn.value = false;
-    Get.offAllNamed('/welcome');
   }
 }
