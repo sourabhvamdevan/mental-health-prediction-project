@@ -44,7 +44,7 @@ const Footer = () => {
               transition={{ duration: 0.3 }}
             >
               <Brain className="text-violet-600" size={28} />
-              <h3 className="text-2xl font-bold bg-gradient-to-r from-violet-700 to-violet-500 bg-clip-text text-transparent">MindGuard AI</h3>
+              <h3 className="text-2xl font-bold bg-gradient-to-r from-violet-700 to-violet-500 bg-clip-text text-transparent">MentalHealth AI</h3>
             </motion.div>
             <p className="text-gray-600 leading-relaxed text-lg">
               Transforming mental wellness through AI-driven technology and personalized care.
@@ -182,7 +182,7 @@ const Footer = () => {
               whileHover={{ scale: 1.05 }}
             >
               <Shield size={18} className="text-violet-600" />
-              © 2025 MindGuard AI. All rights reserved.
+              © 2025 MentalHealth AI.
             </motion.div>
             <div className="flex flex-wrap justify-center gap-8">
               {['Privacy Policy', 'Terms of Service', 'Cookie Policy'].map((policy, index) => (

@@ -242,7 +242,7 @@ const Logo = () => (
       fontSize="24"
       fill="#9933FF"
     >
-      MindGuard
+      MentalHealth AI
     </text>
     <text
       x="186"

@@ -20,6 +20,7 @@ This project is a full-stack health-tech application designed to predict mental 
 | **Database** | MongoDB Atlas |
 | **Machine Learning** | XGBoost, CatBoost, LightGBM, RandomForest |
 | **DevOps** | Docker, Git |
+| **Generative AI** | LangChain, Langraph |
 
 ## Architecture
 The system follows a micro-service inspired architecture where the frontend clients communicate with a central Node.js API, which in turn interfaces with a Python-based ML service.
