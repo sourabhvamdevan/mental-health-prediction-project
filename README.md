@@ -32,7 +32,7 @@ The system follows a micro-service inspired architecture where the frontend clie
 - Python 3.8+ (for ML models)
 - MongoDB Atlas Account
 
-## 🔧 Installation & Setup
+## Installation & Setup
 
 ### Backend (Node.js/Express)
 ```bash
@@ -70,7 +70,7 @@ The prediction engine utilizes a **Weighted Voting Ensemble**:
 - **XGBoost:** High-speed gradient boosting for structured data.
 - **CatBoost:** Superior handling of categorical features without manual encoding.
 - **LightGBM:** Memory-efficient boosting for fast mobile-side responses.
-
+**RandomForest:** Reduces variance by averaging multiple deep decision trees. It provides a "stable baseline" for the ensemble.
 
 
 
