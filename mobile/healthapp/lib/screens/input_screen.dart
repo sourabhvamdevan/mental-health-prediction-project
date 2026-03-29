@@ -48,7 +48,6 @@ class _InputScreenState extends State<InputScreen> {
             SizedBox(height: 30),
             ElevatedButton(
               onPressed: () {
-                // Navigate to Result Screen and pass data
                 Navigator.push(
                   context,
                   MaterialPageRoute(

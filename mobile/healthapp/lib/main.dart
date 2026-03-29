@@ -1,8 +1,14 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:firebase_core/firebase_core.dart';
+import 'package:get/get.dart';
+import 'controllers/auth_controller.dart';
 import 'dart:convert';
+import 'package:http/http.dart' as http;
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  Get.put(AuthController());
   runApp(const MentalHealthApp());
 }
 
@@ -11,10 +17,80 @@ class MentalHealthApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return GetMaterialApp(
       debugShowCheckedModeBanner: false,
-      theme: ThemeData(primarySwatch: Colors.teal, useMaterial3: true),
-      home: const PredictionScreen(),
+      theme: ThemeData(
+        primarySwatch: Colors.teal,
+        useMaterial3: true,
+        colorSchemeSeed: Colors.teal,
+      ),
+      initialRoute: '/',
+      getPages: [
+        GetPage(name: '/', page: () => const AuthWrapper()),
+        GetPage(name: '/dashboard', page: () => const PredictionScreen()),
+        GetPage(name: '/auth', page: () => const LoginScreen()),
+      ],
+    );
+  }
+}
+
+class AuthWrapper extends StatelessWidget {
+  const AuthWrapper({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final AuthController authController = Get.find();
+    return Obx(() {
+      return authController.isLoggedIn.value
+          ? const PredictionScreen()
+          : const LoginScreen();
+    });
+  }
+}
+
+class LoginScreen extends StatelessWidget {
+  const LoginScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Login")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: "Password"),
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
+            Obx(
+              () => authController.isLoading.value
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () => authController.login(
+                        emailController.text,
+                        passwordController.text,
+                      ),
+                      child: const Text("Login"),
+                    ),
+            ),
+            TextButton(
+              onPressed: () => Get.to(() => const SignupScreen()),
+              child: const Text("Don't have an account? Sign up"),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -28,8 +104,9 @@ class PredictionScreen extends StatefulWidget {
 
 class _PredictionScreenState extends State<PredictionScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _ageController = TextEditingController();
+  final AuthController _authController = Get.find();
 
-  final TextEditingController _ageController = TextEditingController();
   String _stressLevel = 'Low';
   String _sleepQuality = 'Good';
   bool _isLoading = false;
@@ -37,17 +114,16 @@ class _PredictionScreenState extends State<PredictionScreen> {
 
   Future<void> getPrediction() async {
     if (!_formKey.currentState!.validate()) return;
-
     setState(() => _isLoading = true);
 
-    // Replace with your Laptop's IP if using a real phone, or 10.0.2.2 for Android Emulator
-    const String apiUrl = "http://localhost:8000/api/predict";
+    const String apiUrl = "http://10.0.2.2:8000/api/predict";
 
     try {
       final response = await http.post(
         Uri.parse(apiUrl),
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
+          "uid": _authController.currentUser.value?.userId ?? "anonymous",
           "age": int.parse(_ageController.text),
           "stress_level": _stressLevel,
           "sleep_quality": _sleepQuality,
@@ -58,14 +134,10 @@ class _PredictionScreenState extends State<PredictionScreen> {
         final data = jsonDecode(response.body);
         setState(() => _result = "Prediction: ${data['prediction']}");
       } else {
-        setState(
-          () => _result = "Error: Server returned ${response.statusCode}",
-        );
+        setState(() => _result = "Error: ${response.statusCode}");
       }
     } catch (e) {
-      setState(
-        () => _result = "Connection failed. Check if server is running.",
-      );
+      setState(() => _result = "Server connection failed.");
     } finally {
       setState(() => _isLoading = false);
     }
@@ -74,19 +146,29 @@ class _PredictionScreenState extends State<PredictionScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Mental Health Predictor")),
+      appBar: AppBar(
+        title: const Text("Predictor"),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () => _authController.logout(),
+          ),
+        ],
+      ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Form(
           key: _formKey,
           child: ListView(
             children: [
-              const Text(
-                "Enter details for Ensemble Model analysis:",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+              Text(
+                "Welcome, ${_authController.currentUser.value?.userName ?? 'User'}",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
               ),
               const SizedBox(height: 20),
-
               TextFormField(
                 controller: _ageController,
                 decoration: const InputDecoration(
@@ -96,7 +178,6 @@ class _PredictionScreenState extends State<PredictionScreen> {
                 keyboardType: TextInputType.number,
                 validator: (value) => value!.isEmpty ? "Enter age" : null,
               ),
-
               const SizedBox(height: 15),
               DropdownButtonFormField(
                 value: _stressLevel,
@@ -105,38 +186,76 @@ class _PredictionScreenState extends State<PredictionScreen> {
                   border: OutlineInputBorder(),
                 ),
                 items: ['Low', 'Medium', 'High']
-                    .map(
-                      (label) =>
-                          DropdownMenuItem(value: label, child: Text(label)),
-                    )
+                    .map((l) => DropdownMenuItem(value: l, child: Text(l)))
                     .toList(),
                 onChanged: (value) => setState(() => _stressLevel = value!),
               ),
-
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _isLoading ? null : getPrediction,
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.all(15),
-                ),
                 child: _isLoading
-                    ? const CircularProgressIndicator(color: Colors.white)
+                    ? const CircularProgressIndicator()
                     : const Text("Predict Status"),
               ),
-
               const SizedBox(height: 30),
               Center(
                 child: Text(
                   _result,
-                  style: const TextStyle(
-                    fontSize: 18,
-                    color: Colors.teal,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: const TextStyle(fontSize: 18, color: Colors.teal),
                 ),
               ),
             ],
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class SignupScreen extends StatelessWidget {
+  const SignupScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final authController = Get.find<AuthController>();
+    final nameController = TextEditingController();
+    final emailController = TextEditingController();
+    final passwordController = TextEditingController();
+
+    return Scaffold(
+      appBar: AppBar(title: const Text("Sign Up")),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: "Full Name"),
+            ),
+            TextField(
+              controller: emailController,
+              decoration: const InputDecoration(labelText: "Email"),
+            ),
+            TextField(
+              controller: passwordController,
+              decoration: const InputDecoration(labelText: "Password"),
+              obscureText: true,
+            ),
+            const SizedBox(height: 20),
+            Obx(
+              () => authController.isLoading.value
+                  ? const CircularProgressIndicator()
+                  : ElevatedButton(
+                      onPressed: () => authController.signup(
+                        nameController.text,
+                        emailController.text,
+                        passwordController.text,
+                        "0000000000",
+                      ),
+                      child: const Text("Register"),
+                    ),
+            ),
+          ],
         ),
       ),
     );
