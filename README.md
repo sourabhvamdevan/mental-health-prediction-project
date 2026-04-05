@@ -12,14 +12,6 @@
 ![JWT](https://img.shields.io/badge/Auth-JWT-black)
 ![LangChain](https://img.shields.io/badge/GenAI-LangChain-purple)
 
-[![License](https://img.shields.io/badge/License-MIT-yellow)](LICENSE)
-[![Node.js](https://img.shields.io/badge/Node.js-16+-green?logo=node.js&logoColor=white)](https://nodejs.org/)
-[![Flutter](https://img.shields.io/badge/Flutter-Mobile-blue?logo=flutter&logoColor=white)](https://flutter.dev/)
-[![React](https://img.shields.io/badge/React-Web-61DAFB?logo=react&logoColor=black)](https://react.dev/)
-[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-green?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
-[![Python](https://img.shields.io/badge/Python-3.8+-blue?logo=python&logoColor=white)](https://www.python.org/)
-[![Docker](https://img.shields.io/badge/Docker-Enabled-2496ED?logo=docker&logoColor=white)](https://www.docker.com/)
-
 This project is a full-stack health-tech application designed to predict mental health conditions using an **Ensemble Learning** approach. It leverages a modern tech stack consisting of a **Flutter** mobile app, a **React** web dashboard, and a **Node.js** backend, with a high-performance machine learning core.
 
 ## Features
