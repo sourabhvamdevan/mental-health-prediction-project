@@ -4,7 +4,7 @@ import {
   Mail, Phone, MapPin, MessageCircle, Globe, Star,
   Shield, Clock, Brain, Activity, ExternalLink, ChevronRight,
   } from 'lucide-react';
-// import { } from 'lucide-react';
+
 import { FaTwitter, FaFacebook, FaLinkedin, FaInstagram } from 'react-icons/fa';
 
 const Footer = () => {

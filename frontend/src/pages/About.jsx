@@ -356,7 +356,7 @@ const CountUp = ({ end }) => {
             <ContactInfo 
               icon={MapPin}
               title="Visit Us"
-              content="Innovation Drive, Tech City Solapur, Maharashtra, India"
+              content="123 Mental Health St, Wellness City, Country"
             />
           </motion.div>
         </motion.div>
