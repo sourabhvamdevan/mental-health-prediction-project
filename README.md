@@ -69,6 +69,8 @@ flutter pub get
 flutter run
 ```
 
+Demo : https://appetize.io/embed/b_urec7fv2vcyexmbldram2x5cee
+
 ###  Machine Learning Service
 Ensure you have the required Python packages installed to serve the ensemble models:
 ```bash
